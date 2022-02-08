@@ -47,5 +47,4 @@ public class Meal {
     public int getCalories() {
         return calories;
     }
-
 }
