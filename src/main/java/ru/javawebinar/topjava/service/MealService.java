@@ -5,6 +5,8 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.to.MealTo;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +37,7 @@ public class MealService {
         return new ArrayList<>(repository.getAll(authUserId));
     }
 
-    public List<MealTo> getByDateTime(String startDate, String endDate, String startTime, String endTime, int authUserId, int caloriesPerDay) {
+    public List<MealTo> getByDateTime(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, int authUserId, int caloriesPerDay) {
         return repository.getByDateTime(startDate, endDate, startTime, endTime, authUserId, caloriesPerDay);
     }
 

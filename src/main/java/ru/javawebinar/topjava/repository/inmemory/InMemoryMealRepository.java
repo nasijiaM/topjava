@@ -9,7 +9,9 @@ import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
 
-import java.util.Collection;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,15 +29,15 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     @Override
-    public Meal save(Meal meal, int authUserId) {
+    public Meal save(Meal meal, int userId) {
         log.info("save {}", meal);
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
-            meal.setUserId(authUserId);
+            meal.setUserId(userId);
             repository.put(meal.getId(), meal);
             return meal;
         }
-        if (repository.get(meal.getId()).getUserId() == authUserId) {
+        if (repository.get(meal.getId()).getUserId() == userId) {
             return repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
         } else {
             return null;
@@ -43,30 +45,30 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     @Override
-    public boolean delete(int mealId, int authUserId) {
+    public boolean delete(int mealId, int userId) {
         log.info("delete {}", mealId);
-        return repository.get(mealId).getUserId() == authUserId && repository.remove(mealId) != null;
+        return repository.get(mealId).getUserId() == userId && repository.remove(mealId) != null;
     }
 
     @Override
-    public Meal get(int mealId, int authUserId) {
+    public Meal get(int mealId, int userId) {
         log.info("get {}", mealId);
-        return (repository.get(mealId) != null && repository.get(mealId).getUserId() == authUserId) ?
-                repository.get(mealId) : null;
+        Meal meal = repository.get(mealId);
+        return (meal != null && meal.getUserId() == userId) ? meal : null;
     }
 
     @Override
-    public Collection<Meal> getAll(int authUserId) {
+    public List<Meal> getAll(int userId) {
         log.info("getAll");
         return repository.values().stream()
-                .filter(meal -> meal.getUserId() == authUserId)
-                .sorted((meal1, meal2) -> meal2.getDateTime().compareTo(meal1.getDateTime()))
+                .filter(meal -> meal.getUserId() == userId)
+                .sorted(Comparator.comparing(Meal::getDateTime).reversed())
                 .collect(Collectors.toList());
     }
 
-    public List<MealTo> getByDateTime(String startDate, String endDate, String startTime, String endTime, int authUserId, int caloriesPerDay) {
+    public List<MealTo> getByDateTime(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, int userId, int caloriesPerDay) {
         log.info("getByDateTime");
-        return MealsUtil.filterByPredicate(getAll(authUserId),
+        return MealsUtil.filterByPredicate(getAll(userId),
                 caloriesPerDay,
                 meal -> DateTimeUtil.isBetweenHalfOpen(meal.getDateTime(), startDate, endDate, startTime, endTime));
     }

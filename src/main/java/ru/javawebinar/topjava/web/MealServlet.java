@@ -12,7 +12,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
@@ -37,13 +39,12 @@ public class MealServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         String id = request.getParameter("id");
-        String userId = request.getParameter("userId");
 
         Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")),
-                userId.isEmpty() ? null : Integer.parseInt(userId));
+                SecurityUtil.authUserId());
 
         log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
         if (meal.isNew()) {
@@ -57,10 +58,6 @@ public class MealServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
-        String fromDate = request.getParameter("fromDate");
-        String toDate = request.getParameter("toDate");
-        String fromTime = request.getParameter("fromTime");
-        String toTime = request.getParameter("toTime");
 
         switch (action == null ? "all" : action) {
             case "delete":
@@ -79,9 +76,19 @@ public class MealServlet extends HttpServlet {
                 break;
             case "all":
             default:
+                String fromDate = request.getParameter("fromDate");
+                String toDate = request.getParameter("toDate");
+                String fromTime = request.getParameter("fromTime");
+                String toTime = request.getParameter("toTime");
+
                 if (fromDate != null || toDate != null || fromTime != null || toTime != null) {
+                    LocalDate startDate = (!fromDate.isEmpty()) ? LocalDate.parse(fromDate) : LocalDate.MIN;
+                    LocalDate endDate = (!toDate.isEmpty()) ? LocalDate.parse(toDate) : LocalDate.MAX;
+                    LocalTime startTime = (!fromTime.isEmpty()) ? LocalTime.parse(fromTime) : LocalTime.MIN;
+                    LocalTime endTime = (!toTime.isEmpty()) ? LocalTime.parse(toTime) : LocalTime.MAX;
+
                     log.info("getAllByDateTime");
-                    request.setAttribute("meals", mealRestController.getByDateTime(fromDate, toDate, fromTime, toTime));
+                    request.setAttribute("meals", mealRestController.getByDateTime(startDate, endDate, startTime, endTime));
                 } else {
                     log.info("getAll");
                     request.setAttribute("meals",
