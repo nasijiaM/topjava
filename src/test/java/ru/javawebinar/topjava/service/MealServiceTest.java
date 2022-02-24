@@ -12,12 +12,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.List;
 
 import static org.junit.Assert.*;
 import static ru.javawebinar.topjava.MealTestData.*;
+import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
+import static ru.javawebinar.topjava.UserTestData.USER_ID;
+import static ru.javawebinar.topjava.UserTestData.NOT_FOUND;
 
 @ContextConfiguration({
         "classpath:spring/spring-app.xml",
@@ -73,9 +74,15 @@ public class MealServiceTest {
     }
 
     @Test
+    public void getBetweenInclusiveWithNull() {
+        List<Meal> allBetweenInclusive = service.getBetweenInclusive(null, null, USER_ID);
+        assertMatch(allBetweenInclusive, meal4, meal3, meal2, meal1);
+    }
+
+    @Test
     public void getAll() {
         List<Meal> all = service.getAll(USER_ID);
-        assertMatch(all, meal7, meal6, meal5, meal4, meal3, meal2, meal1);
+        assertMatch(all, meal4, meal3, meal2, meal1);
     }
 
     @Test
@@ -87,7 +94,8 @@ public class MealServiceTest {
 
     @Test
     public void updateNotOwned() {
-        assertThrows(NotFoundException.class, () -> service.get(MEAL1_ID, ADMIN_ID));
+        Meal updated = getUpdated();
+        assertThrows(NotFoundException.class, () -> service.update(updated, ADMIN_ID));
     }
 
     @Test
@@ -103,7 +111,7 @@ public class MealServiceTest {
     @Test
     public void duplicateDateTimeCreate() {
         assertThrows(DataAccessException.class, () ->
-                service.create(new Meal(null, LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0),
+                service.create(new Meal(null, meal1.getDateTime(),
                         "Duplicate", 1000), USER_ID));
     }
 }
