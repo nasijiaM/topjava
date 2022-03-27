@@ -8,14 +8,11 @@ import ru.javawebinar.topjava.repository.JpaUtil;
 public class AbstractJpaUserServiceTest extends AbstractUserServiceTest {
 
     @Autowired
-    private CacheManager cacheManager;
-
-    @Autowired
     protected JpaUtil jpaUtil;
 
-    @Before
+    @Override
     public void setup() {
-        cacheManager.getCache("users").clear();
+        super.setup();
         jpaUtil.clear2ndLevelHibernateCache();
     }
 }
