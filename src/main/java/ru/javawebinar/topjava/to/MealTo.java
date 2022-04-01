@@ -44,26 +44,6 @@ public class MealTo {
         return excess;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = dateTime;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setCalories(int calories) {
-        this.calories = calories;
-    }
-
-    public void setExcess(boolean excess) {
-        this.excess = excess;
-    }
-
     @Override
     public String toString() {
         return "MealTo{" +
